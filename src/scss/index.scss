@@ -1,0 +1,21 @@
+@import 'products';
+@import 'cart';
+
+body {
+  margin: 0;
+}
+
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+.gnb {
+  ul {
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+}
