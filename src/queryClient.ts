@@ -1,8 +1,6 @@
 import { QueryClient } from 'react-query'
 import { request, RequestDocument } from 'graphql-request'
 
-// import { getTodos, postTodo } from '../my-api'
-
 type AnyOBJ = { [key: string]: any }
 
 export const getClient = (() => {
@@ -12,8 +10,8 @@ export const getClient = (() => {
       client = new QueryClient({
         defaultOptions: {
           queries: {
-            cacheTime: 1000 * 60 * 60 * 24,
-            staleTime: 1000 * 60,
+            staleTime: Infinity,
+            cacheTime: Infinity,
             refetchOnMount: false,
             refetchOnReconnect: false,
             refetchOnWindowFocus: false,
