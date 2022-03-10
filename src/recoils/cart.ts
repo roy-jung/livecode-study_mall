@@ -1,11 +1,12 @@
 import { atom, selector, selectorFamily, useRecoilValue } from 'recoil'
+import { CartType } from '../graphql/cart'
 
-const cartState = atom<Map<string, number>>({
+export const checkedCartState = atom<CartType[]>({
   key: 'cartState',
-  default: new Map(),
+  default: [],
 })
 
-export const cartItemSelector = selectorFamily<number | undefined, string>({
+/* export const cartItemSelector = selectorFamily<number | undefined, string>({
   key: 'cartItem',
   get:
     (id: string) =>
@@ -24,3 +25,4 @@ export const cartItemSelector = selectorFamily<number | undefined, string>({
       }
     },
 })
+ */

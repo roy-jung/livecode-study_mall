@@ -2,8 +2,6 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  padding: 0;
-  list-style: none;
 }
 
 .cart-item {
@@ -17,5 +15,25 @@
   &__price {
   }
   &__amount {
+  }
+}
+
+.cart-willpay {
+  border: 1px solid #000;
+  padding: 10px;
+
+  ul {
+    display: flex;
+    gap: 10px;
+  }
+
+  li {
+    border: 1px solid #000;
+    padding: 10px;
+  }
+  img {
+    width: 100px;
+    height: 75px;
+    object-fit: contain;
   }
 }

@@ -1,8 +1,13 @@
 @import 'products';
 @import 'cart';
-
+@import 'payment';
 body {
   margin: 0;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
 }
 
 #root {
