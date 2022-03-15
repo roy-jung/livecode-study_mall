@@ -7,7 +7,7 @@ import { graphqlFetcher, QueryKeys } from '../../queryClient'
 const ProductDetailPage = () => {
   const { id } = useParams()
 
-  const { data } = useQuery<Product>([QueryKeys.PRODUCTS, id], () =>
+  const { data } = useQuery<{ product: Product }>([QueryKeys.PRODUCTS, id], () =>
     graphqlFetcher(GET_PRODUCT, { id }),
   )
 
@@ -16,7 +16,7 @@ const ProductDetailPage = () => {
   return (
     <div>
       <h2>상품상세</h2>
-      <ProductDetail item={data} />
+      <ProductDetail item={data.product} />
     </div>
   )
 }
