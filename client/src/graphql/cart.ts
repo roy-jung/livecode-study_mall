@@ -26,7 +26,7 @@ export const GET_CART = gql`
 
 export const ADD_CART = gql`
   mutation ADD_CART($id: ID!) {
-    addCart(productId: $id) {
+    addCart(id: $id) {
       id
       amount
       product {
@@ -43,7 +43,7 @@ export const ADD_CART = gql`
 
 export const UPDATE_CART = gql`
   mutation UPDATE_CART($id: ID!, $amount: Int!) {
-    updateCart(cartId: $id, amount: $amount) {
+    updateCart(id: $id, amount: $amount) {
       id
       amount
       product {
@@ -60,8 +60,6 @@ export const UPDATE_CART = gql`
 
 export const DELETE_CART = gql`
   mutation DELETE_CART($id: ID!) {
-    deleteCart(cartId: $id) {
-      id
-    }
+    deleteCart
   }
 `

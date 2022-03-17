@@ -3,6 +3,7 @@ import { ApolloServer } from 'apollo-server-express'
 import schema from './schema'
 import resolvers from './resolvers'
 import env from './envLoader'
+import { DBField, readDB } from './dbController'
 ;(async () => {
   const clientUrl = env.CLIENT_URL as string
   const port = env.PORT || 8000
@@ -10,6 +11,12 @@ import env from './envLoader'
   const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
+    context: {
+      db: {
+        products: readDB(DBField.PRODUCTS),
+        cart: readDB(DBField.CART),
+      },
+    },
   })
 
   const app = express()
