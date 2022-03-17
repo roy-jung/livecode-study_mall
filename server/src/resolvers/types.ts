@@ -20,7 +20,7 @@ export type Product = {
   price: number
   title: string
   description: string
-  createdAt: number
+  createdAt?: number
 }
 
 export type Products = Product[]
