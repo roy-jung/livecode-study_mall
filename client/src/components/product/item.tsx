@@ -12,7 +12,7 @@ const ProductItem = ({ id, imageUrl, price, title }: Product) => {
       <Link to={`/products/${id}`}>
         <p className="product-item__title">{title}</p>
         <img className="product-item__image" src={imageUrl} />
-        <span className="product-item__price">${price}</span>
+        <span className="product-item__price">₩{price}</span>
       </Link>
       <button className="product-item__add-cart" onClick={() => addCart(id)}>
         담기

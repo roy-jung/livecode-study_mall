@@ -6,9 +6,16 @@ const setJSON = (data: Products) => writeDB(DBField.PRODUCTS, data)
 
 const productResolver: Resolver = {
   Query: {
-    products: (parent, { cursor = '' }, { db }) => {
-      const fromIndex = db.products.findIndex(product => product.id === cursor) + 1
-      return db.products.slice(fromIndex, fromIndex + 15) || []
+    products: (parent, { cursor = '', showDeleted = false }, { db }) => {
+      const [hasCreatedAt, noCreatedAt] = [
+        db.products
+          .filter(product => !!product.createdAt)
+          .sort((a, b) => b.createdAt! - a.createdAt!),
+        db.products.filter(product => !product.createdAt),
+      ]
+      const filteredDB = showDeleted ? [...hasCreatedAt, ...noCreatedAt] : hasCreatedAt
+      const fromIndex = filteredDB.findIndex(product => product.id === cursor) + 1
+      return filteredDB.slice(fromIndex, fromIndex + 15) || []
     },
     product: (parent, { id }, { db }) => {
       const found = db.products.find(item => item.id === id)
