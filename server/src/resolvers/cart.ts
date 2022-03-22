@@ -1,3 +1,5 @@
+import { collection, DocumentData, getDoc, getDocs } from 'firebase/firestore'
+import { db } from '../../firebase'
 import { DBField, writeDB } from '../dbController'
 import { Cart, Resolver } from './types'
 
@@ -5,8 +7,18 @@ const setJSON = (data: Cart) => writeDB(DBField.CART, data)
 
 const cartResolver: Resolver = {
   Query: {
-    cart: (parent, args, { db }) => {
-      return db.cart
+    cart: async (parent, args) => {
+      const cart = collection(db, 'cart')
+      const cartSnap = await getDocs(cart)
+      const data: DocumentData[] = []
+      cartSnap.forEach(doc => {
+        const d = doc.data()
+        data.push({
+          id: doc.id,
+          ...d,
+        })
+      })
+      return data
     },
   },
   Mutation: {
@@ -61,14 +73,27 @@ const cartResolver: Resolver = {
     },
     executePay: (parent, { ids }, { db }) => {
       const newCartData = db.cart.filter(cartItem => !ids.includes(cartItem.id))
+      if (
+        newCartData.some(item => {
+          const product = db.products.find((product: any) => product.id === item.id)
+          return !product?.createdAt
+        })
+      )
+        throw new Error('삭제된 상품이 포함되어 결제를 진행할 수 없습니다.')
       db.cart = newCartData
       setJSON(db.cart)
       return ids
     },
   },
   CartItem: {
-    product: (cartItem, args, { db }) =>
-      db.products.find((product: any) => product.id === cartItem.id),
+    product: async (cartItem, args) => {
+      const product = await getDoc(cartItem.product)
+      const data = product.data() as any
+      return {
+        ...data,
+        id: product.id,
+      }
+    },
   },
 }
 
