@@ -1,7 +1,19 @@
-import { collection, DocumentData, getDoc, getDocs } from 'firebase/firestore'
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  DocumentData,
+  getDoc,
+  getDocs,
+  increment,
+  query,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import { db } from '../../firebase'
 import { DBField, writeDB } from '../dbController'
-import { Cart, Resolver } from './types'
+import { Cart, Product, Resolver } from './types'
 
 const setJSON = (data: Cart) => writeDB(DBField.CART, data)
 
@@ -22,67 +34,71 @@ const cartResolver: Resolver = {
     },
   },
   Mutation: {
-    addCart: (parent, { id }, { db }) => {
-      if (!id) throw Error('상품id가 없다!')
-      const targetProduct = db.products.find(item => item.id === id)
-      if (!targetProduct) {
-        throw new Error('상품이 없습니다')
-      }
+    addCart: async (parent, { productId }) => {
+      if (!productId) throw Error('상품id가 없다!')
+      const productRef = doc(db, 'products', productId)
+      const cartCollection = collection(db, 'cart')
+      const exist = (await getDocs(query(cartCollection, where('product', '==', productRef))))
+        .docs[0]
 
-      const existCartIndex = db.cart.findIndex(item => item.id === id)
-      if (existCartIndex > -1) {
-        const newCartItem = {
-          id,
-          amount: db.cart[existCartIndex].amount + 1,
-        }
-        db.cart.splice(existCartIndex, 1, newCartItem)
-        setJSON(db.cart)
-        return newCartItem
-      }
-      const newItem = {
-        id,
-        amount: 1,
-      }
-      db.cart.push(newItem)
-      setJSON(db.cart)
-      return newItem
-    },
-    updateCart: (parent, { id, amount }, { db }) => {
-      const existCartIndex = db.cart.findIndex(item => item.id === id)
-
-      if (existCartIndex < 0) {
-        throw new Error('없는 데이터입니다')
-      }
-      const newCartItem = {
-        id,
-        amount,
-      }
-      db.cart.splice(existCartIndex, 1, newCartItem)
-      setJSON(db.cart)
-      return newCartItem
-    },
-    deleteCart: (parent, { id }, { db }) => {
-      const existCartIndex = db.cart.findIndex(item => item.id === id)
-
-      if (existCartIndex < 0) {
-        throw new Error('없는 데이터입니다')
-      }
-      db.cart.splice(existCartIndex, 1)
-      setJSON(db.cart)
-      return id
-    },
-    executePay: (parent, { ids }, { db }) => {
-      const newCartData = db.cart.filter(cartItem => !ids.includes(cartItem.id))
-      if (
-        newCartData.some(item => {
-          const product = db.products.find((product: any) => product.id === item.id)
-          return !product?.createdAt
+      let cartRef
+      if (exist) {
+        cartRef = doc(db, 'cart', exist.id)
+        await updateDoc(cartRef, {
+          amount: increment(1),
         })
-      )
-        throw new Error('삭제된 상품이 포함되어 결제를 진행할 수 없습니다.')
-      db.cart = newCartData
-      setJSON(db.cart)
-      return ids
+      } else {
+        cartRef = await addDoc(cartCollection, {
+          amount: 1,
+          product: productRef,
+        })
+      }
+      const cartSnapshot = await getDoc(cartRef)
+      return {
+        ...cartSnapshot.data(),
+        product: productRef,
+        id: cartSnapshot.id,
+      }
+    },
+    updateCart: async (parent, { cartId, amount }) => {
+      if (amount < 1) throw Error('1 이하로 바꿀 수 없습니다.')
+      const cartRef = doc(db, 'cart', cartId)
+      if (!cartRef) throw Error('장바구니 정보가 없다')
+      await updateDoc(cartRef, {
+        amount,
+      })
+      const cartSnapshot = await getDoc(cartRef)
+      return {
+        ...cartSnapshot.data(),
+        id: cartSnapshot.id,
+      }
+    },
+
+    deleteCart: async (parent, { cartId }) => {
+      const cartRef = doc(db, 'cart', cartId)
+      if (!cartRef) throw Error('장바구니 정보가 없다')
+      await deleteDoc(cartRef)
+      return cartId
+    },
+
+    executePay: async (parent, { ids }) => {
+      // createdAt이 비어있지 않은 ids들에 대해서 결제처리가 완료되었다고 가정하고
+      // cart에서 이들 ids를 지워준다.
+      const deleted = []
+      for await (const id of ids) {
+        const cartRef = doc(db, 'cart', id)
+        const cartSnapshot = await getDoc(cartRef)
+        const cartData = cartSnapshot.data()
+        const productRef = cartData?.product
+        if (!productRef) throw Error('상품정보가 없다.')
+        const product = (await getDoc(productRef)).data() as Product
+        if (product.createdAt) {
+          await deleteDoc(cartRef)
+          deleted.push(id)
+        } else {
+        }
+      }
+      return deleted
     },
   },
   CartItem: {
