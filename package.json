@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "client": "yarn workspace client dev",
-    "server": "yarn workspace server dev"
+    "server": "yarn workspace server dev",
+    "start": "cd server && npm run serve"
   }
 }

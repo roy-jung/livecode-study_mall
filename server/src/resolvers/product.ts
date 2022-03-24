@@ -1,6 +1,4 @@
-import { Products, Resolver } from './types'
-import { v4 as uuid } from 'uuid'
-import { DBField, writeDB } from '../dbController'
+import { Resolver } from './types'
 import {
   addDoc,
   collection,
@@ -16,10 +14,9 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { db } from '../../firebase'
+import { db } from '../firebase'
 
 const PAGE_SIZE = 15
-const setJSON = (data: Products) => writeDB(DBField.PRODUCTS, data)
 
 const productResolver: Resolver = {
   Query: {

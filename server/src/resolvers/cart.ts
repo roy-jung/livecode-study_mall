@@ -11,11 +11,8 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { db } from '../../firebase'
-import { DBField, writeDB } from '../dbController'
-import { Cart, Product, Resolver } from './types'
-
-const setJSON = (data: Cart) => writeDB(DBField.CART, data)
+import { db } from '../firebase'
+import { Product, Resolver } from './types'
 
 const cartResolver: Resolver = {
   Query: {
